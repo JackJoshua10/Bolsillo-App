@@ -3,6 +3,7 @@
 ## Objetivo
 
 Registrar un gasto **sin abrir la app** en unos 3 segundos, desde:
+
 - el **Centro de Control** (deslizar desde la esquina superior derecha), en iOS 18+
 - la **pantalla de bloqueo** (controles de iOS 18)
 - el **botón de Acción** (iPhone 15 Pro o posterior)

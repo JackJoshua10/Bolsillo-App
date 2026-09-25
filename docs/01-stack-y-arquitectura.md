@@ -2,26 +2,26 @@
 
 ## Stack
 
-| Capa | Tecnología | Notas |
-|---|---|---|
-| Lenguaje | **TypeScript** (strict) | En todo el proyecto |
-| Framework | **Next.js** (App Router) | Frontend y API en un solo proyecto |
-| UI | **Tailwind CSS** + **shadcn/ui** (Radix) | Los componentes se copian al repo y se adaptan al diseño |
-| Íconos | **Lucide** | |
-| Gráficos | **Recharts** | Donut de categorías, barras mensuales, sparkline |
-| Formularios | **react-hook-form** + **Zod** | Los mismos esquemas Zod validan en el cliente y en el servidor |
-| Estado del servidor | **TanStack Query** | Caché, refetch y actualizaciones optimistas al agregar gastos |
-| Backend y datos | **Supabase** (Postgres + Auth + RLS + Storage) | Plan gratis al inicio |
-| Auth | Supabase Auth: **Google OAuth** y **email/contraseña** | Con `@supabase/ssr` para las cookies en Next |
-| Migraciones | **Supabase CLI** (`supabase/migrations/*.sql`) | Tipos TS generados con `supabase gen types` |
-| PWA | **Serwist** (manifest + service worker) | Instalable. Offline completo pospuesto |
-| Fechas | **date-fns** (zona `America/Lima`) | |
-| Tests | **Vitest** (unitarios) + **Playwright** (e2e) | |
-| Calidad | ESLint + Prettier + Husky/lint-staged | |
-| Paquetes | **pnpm** | |
-| Hosting | **Vercel** | Deploy automático desde `main`, con preview por cada PR |
-| Errores | **Sentry** (plan gratis) | A partir de la fase 2 |
-| Tipo de cambio | API pública de tipo de cambio SUNAT + **edición manual** | Proveedor exacto por definir (ver el roadmap) |
+| Capa                | Tecnología                                               | Notas                                                          |
+| ------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Lenguaje            | **TypeScript** (strict)                                  | En todo el proyecto                                            |
+| Framework           | **Next.js** (App Router)                                 | Frontend y API en un solo proyecto                             |
+| UI                  | **Tailwind CSS** + **shadcn/ui** (Radix)                 | Los componentes se copian al repo y se adaptan al diseño       |
+| Íconos              | **Lucide**                                               |                                                                |
+| Gráficos            | **Recharts**                                             | Donut de categorías, barras mensuales, sparkline               |
+| Formularios         | **react-hook-form** + **Zod**                            | Los mismos esquemas Zod validan en el cliente y en el servidor |
+| Estado del servidor | **TanStack Query**                                       | Caché, refetch y actualizaciones optimistas al agregar gastos  |
+| Backend y datos     | **Supabase** (Postgres + Auth + RLS + Storage)           | Plan gratis al inicio                                          |
+| Auth                | Supabase Auth: **Google OAuth** y **email/contraseña**   | Con `@supabase/ssr` para las cookies en Next                   |
+| Migraciones         | **Supabase CLI** (`supabase/migrations/*.sql`)           | Tipos TS generados con `supabase gen types`                    |
+| PWA                 | **Serwist** (manifest + service worker)                  | Instalable. Offline completo pospuesto                         |
+| Fechas              | **date-fns** (zona `America/Lima`)                       |                                                                |
+| Tests               | **Vitest** (unitarios) + **Playwright** (e2e)            |                                                                |
+| Calidad             | ESLint + Prettier + Husky/lint-staged                    |                                                                |
+| Paquetes            | **pnpm**                                                 |                                                                |
+| Hosting             | **Vercel**                                               | Deploy automático desde `main`, con preview por cada PR        |
+| Errores             | **Sentry** (plan gratis)                                 | A partir de la fase 2                                          |
+| Tipo de cambio      | API pública de tipo de cambio SUNAT + **edición manual** | Proveedor exacto por definir (ver el roadmap)                  |
 
 > Desarrollo local en Windows: la Supabase CLI local necesita **Docker Desktop**. Como alternativa se puede usar un proyecto Supabase "dev" en la nube y otro "prod".
 
