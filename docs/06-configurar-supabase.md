@@ -36,7 +36,7 @@ Supabase solo redirige a URLs de esta lista. Eso impide que alguien use los corr
 
 ## 5. Plantillas de correo (en español)
 
-> **Requieren SMTP propio.** En el plan Free, Supabase solo permite editar las plantillas si configuras un servidor de correo (por ejemplo, Resend, que tiene plan gratuito). Mientras tanto se usan las plantillas por defecto, en inglés, y la app las soporta igual: `/auth/confirm` acepta su formato (`code`). La única limitación es que **el enlace debe abrirse en el mismo navegador donde te registraste**.
+> **Requieren SMTP propio.** En el plan Free, Supabase solo permite editar las plantillas si configuras un servidor de correo (por ejemplo, Resend, que tiene plan gratuito). Mientras tanto se usan las plantillas por defecto, en inglés, y la app las soporta igual: `/auth/confirm` acepta su formato (`code`). Si el enlace de **confirmación** se abre en otro navegador, el correo igual queda confirmado y la app te lleva al login para entrar con tu contraseña. El de **recuperar contraseña** sí debe abrirse en el mismo navegador.
 
 Cuando haya SMTP, en **Authentication → Emails → Templates**:
 

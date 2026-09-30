@@ -11,6 +11,8 @@ import { createClient } from "@/lib/supabase/server"
  *   en el mismo navegador donde se pidió.
  * Ver docs/06-configurar-supabase.md
  */
+const RECOVERY_PATH = "/nueva-contrasena"
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
   const tokenHash = searchParams.get("token_hash")
@@ -28,6 +30,12 @@ export async function GET(request: NextRequest) {
   } else if (code) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) return NextResponse.redirect(new URL(next, request.url))
+
+    // Supabase ya confirmó el correo antes de redirigir aquí; solo falló el inicio de sesión
+    // automático (el enlace se abrió en otro navegador). En registro basta con entrar.
+    if (error.code === "pkce_code_verifier_not_found" && next !== RECOVERY_PATH) {
+      return NextResponse.redirect(new URL("/login?confirmado=1", request.url))
+    }
     errorCode = error.code
   } else {
     // Supabase redirige con error_code cuando el enlace venció o ya se usó

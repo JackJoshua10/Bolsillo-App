@@ -8,7 +8,7 @@ import type { FormState } from "@/lib/form-state"
 import { requestPasswordReset, signIn, signInWithGoogle, signUp, updatePassword } from "@/server/actions/auth"
 import { Divider, Field, FormAlert, SubmitButton } from "./fields"
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(signIn, undefined)
 
   return (
@@ -17,7 +17,7 @@ export function LoginForm({ next }: { next?: string }) {
       <Divider>o con tu correo</Divider>
       <form action={action} className="flex flex-col gap-4" noValidate>
         {next && <input type="hidden" name="next" value={next} />}
-        <FormAlert error={state?.error} />
+        <FormAlert error={state?.error} message={state ? undefined : notice} />
         <Field
           label="Correo"
           name="email"

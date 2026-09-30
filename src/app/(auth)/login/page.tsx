@@ -8,7 +8,7 @@ import { safeNextPath } from "@/lib/auth-errors"
 export const metadata: Metadata = { title: "Entrar" }
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
-  const { next } = await searchParams
+  const { next, confirmado } = await searchParams
   const nextPath = safeNextPath(next, "")
 
   return (
@@ -24,7 +24,10 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </>
       }
     >
-      <LoginForm next={nextPath || undefined} />
+      <LoginForm
+        next={nextPath || undefined}
+        notice={confirmado ? "Tu correo quedó confirmado. Entra con tu contraseña." : undefined}
+      />
     </AuthShell>
   )
 }

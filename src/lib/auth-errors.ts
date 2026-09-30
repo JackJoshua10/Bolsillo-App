@@ -14,6 +14,7 @@ const MESSAGES: Record<string, string> = {
   flow_state_expired: "El enlace venció. Vuelve a intentarlo.",
   flow_state_not_found: "El enlace ya no es válido. Vuelve a intentarlo.",
   bad_code_verifier: "Abre el enlace en el mismo navegador donde lo pediste.",
+  pkce_code_verifier_not_found: "Abre el enlace en el mismo navegador donde lo pediste.",
   provider_disabled: "Ese método de inicio de sesión aún no está habilitado.",
   oauth_provider_not_supported: "Ese método de inicio de sesión aún no está habilitado.",
   email_provider_disabled: "El registro con correo está deshabilitado.",
