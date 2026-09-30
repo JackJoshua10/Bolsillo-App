@@ -37,6 +37,7 @@
 - [ ] **Metas de ahorro**
 - [ ] Recordatorio de pago de tarjeta (notificaciones push de la PWA, iOS 16.4+ instalada)
 - [ ] Adjuntar foto del voucher (Supabase Storage)
+- [ ] **SMTP propio** (Resend) + plantillas de correo en español (ver [06](06-configurar-supabase.md))
 - [ ] Sentry y analítica básica
 - [ ] 🔔 **Revisar si hace falta el modo offline** (ver abajo)
 

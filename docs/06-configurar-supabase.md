@@ -30,15 +30,15 @@ Guía paso a paso para dejar funcionando la base de datos y el login. Se hace un
 En **Authentication → URL Configuration**:
 
 - **Site URL:** `http://localhost:3000` (en producción será el dominio de Vercel)
-- **Redirect URLs:** agrega
-  - `http://localhost:3000/**`
-  - `https://*-jackjoshua10s-projects.vercel.app/**` (previews de Vercel; ajusta el nombre cuando exista)
+- **Redirect URLs:** agrega `http://localhost:3000/**` ✅ (hecho en `bolsillo-dev`). Cuando conectemos Vercel se agregan sus dominios.
 
 Supabase solo redirige a URLs de esta lista. Eso impide que alguien use los correos para mandar gente a otro sitio.
 
 ## 5. Plantillas de correo (en español)
 
-En **Authentication → Emails → Templates**:
+> **Requieren SMTP propio.** En el plan Free, Supabase solo permite editar las plantillas si configuras un servidor de correo (por ejemplo, Resend, que tiene plan gratuito). Mientras tanto se usan las plantillas por defecto, en inglés, y la app las soporta igual: `/auth/confirm` acepta su formato (`code`). La única limitación es que **el enlace debe abrirse en el mismo navegador donde te registraste**.
+
+Cuando haya SMTP, en **Authentication → Emails → Templates**:
 
 **Confirm signup**
 
@@ -66,7 +66,7 @@ En **Authentication → Emails → Templates**:
 
 > Estos enlaces usan `token_hash`, así que funcionan aunque el correo se abra en otro navegador o en el iPhone.
 
-**Límite del plan Free:** Supabase envía pocos correos por hora con su servidor de prueba. Para uso real (fase 2) configuraremos un SMTP propio (por ejemplo, Resend) en **Authentication → Emails → SMTP Settings**.
+**Límite sin SMTP:** el servidor de prueba de Supabase envía muy pocos correos por hora y solo sirve para desarrollo. Antes de invitar a otras personas (fase 2) configuraremos SMTP en **Authentication → Emails → SMTP Settings**.
 
 ## 6. Login con Google (opcional, se puede hacer después)
 
