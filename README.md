@@ -16,6 +16,7 @@ App de finanzas personales para registrar gastos, ingresos y transferencias en s
 | [03 · Modelo de datos](docs/03-modelo-de-datos.md)                     | Tablas, relaciones, seguridad (RLS) y reglas de negocio                |
 | [04 · Funcionalidades y roadmap](docs/04-funcionalidades-y-roadmap.md) | Pantallas y fases (MVP → v2 → v3)                                      |
 | [05 · Atajo de iOS](docs/05-atajo-ios.md)                              | Registro rápido desde el Centro de Control                             |
+| [06 · Configurar Supabase](docs/06-configurar-supabase.md)             | Crear el proyecto, variables, tablas, correos y Google                 |
 
 ## Estado
 

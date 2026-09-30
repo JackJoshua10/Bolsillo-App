@@ -14,7 +14,7 @@
 
 **Objetivo:** usarla a diario en mi iPhone durante 2–4 semanas.
 
-- [ ] **Auth:** registro/login con Google y email, recuperar contraseña
+- [~] **Auth:** registro/login con Google y email, recuperar contraseña (código listo; falta configurar Supabase, ver [06](06-configurar-supabase.md))
 - [ ] **Onboarding guiado:** "¿Qué usas?" → efectivo, cuenta bancaria (con Yape/Plin), tarjeta(s) de crédito (PEN / USD / bimoneda), ahorros, dólares. Solo crea lo elegido, con su saldo inicial. _(Caso del autor: Efectivo + BCP·Yape + Tarjeta en soles)_
 - [ ] Día de inicio de mes configurable (por defecto el 1)
 - [ ] **Agregar movimiento:** gasto, ingreso o transferencia (incluye pagar tarjeta y cambiar dólares). Meta: menos de 5 segundos
