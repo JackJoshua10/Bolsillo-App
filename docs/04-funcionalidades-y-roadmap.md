@@ -15,10 +15,10 @@
 **Objetivo:** usarla a diario en mi iPhone durante 2–4 semanas.
 
 - [~] **Auth:** registro/login con Google y email, recuperar contraseña (código listo; falta configurar Supabase, ver [06](06-configurar-supabase.md))
-- [ ] **Onboarding guiado:** "¿Qué usas?" → efectivo, cuenta bancaria (con Yape/Plin), tarjeta(s) de crédito (PEN / USD / bimoneda), ahorros, dólares. Solo crea lo elegido, con su saldo inicial. _(Caso del autor: Efectivo + BCP·Yape + Tarjeta en soles)_
-- [ ] Día de inicio de mes configurable (por defecto el 1)
-- [ ] **Agregar movimiento:** gasto, ingreso o transferencia (incluye pagar tarjeta y cambiar dólares). Meta: menos de 5 segundos
-- [ ] **Inicio:** patrimonio neto en PEN, gasto del mes, saldos por cuenta, deuda de tarjeta y sparkline de 30 días
+- [x] **Onboarding guiado** (`/bienvenida`: efectivo, banco con Yape/Plin, tarjeta PEN o USD; ahorros/dólares/más tarjetas irán en "Cuentas"): "¿Qué usas?" → efectivo, cuenta bancaria (con Yape/Plin), tarjeta(s) de crédito (PEN / USD / bimoneda), ahorros, dólares. Solo crea lo elegido, con su saldo inicial. _(Caso del autor: Efectivo + BCP·Yape + Tarjeta en soles)_
+- [~] Día de inicio de mes configurable (por defecto el 1): la lógica ya existe (`monthRange`), falta el ajuste en Perfil
+- [~] **Agregar movimiento** (gasto e ingreso listos con el botón +; falta transferencia): gasto, ingreso o transferencia (incluye pagar tarjeta y cambiar dólares). Meta: menos de 5 segundos
+- [~] **Inicio** (datos reales: patrimonio, gasto e ingresos del mes, cuentas, últimos movimientos; falta el sparkline): patrimonio neto en PEN, gasto del mes, saldos por cuenta, deuda de tarjeta y sparkline de 30 días
 - [ ] **Movimientos:** lista por día, filtros (cuenta, categoría, tipo, rango), búsqueda, editar, borrar y deshacer
 - [ ] **Cuentas:** CRUD. La tarjeta muestra límite, disponible, fecha de corte y fecha de pago
 - [ ] **Categorías:** CRUD con ícono y color

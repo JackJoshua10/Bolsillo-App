@@ -2,9 +2,8 @@ import { Banknote, CreditCard, Landmark, PiggyBank, Wallet, type LucideIcon } fr
 
 import { cn } from "@/lib/utils"
 import type { Currency } from "@/lib/money"
+import type { AccountType } from "@/types/finance"
 import { AmountDisplay } from "./amount-display"
-
-export type AccountType = "cash" | "wallet" | "bank" | "credit_card" | "savings"
 
 const ICONS: Record<AccountType, LucideIcon> = {
   cash: Banknote,
@@ -20,7 +19,7 @@ interface AccountTileProps {
   type: AccountType
   currency: Currency
   balanceCents: number
-  creditLimitCents?: number
+  creditLimitCents?: number | null
   className?: string
 }
 

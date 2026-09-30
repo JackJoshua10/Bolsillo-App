@@ -59,20 +59,21 @@ api_tokens (por usuario)
 
 ### `accounts`
 
-| Columna                 | Tipo                                                        | Notas                                                   |
-| ----------------------- | ----------------------------------------------------------- | ------------------------------------------------------- |
-| space_id                | uuid FK                                                     |                                                         |
-| name                    | text                                                        | "Efectivo", "BCP", "Visa BCP"                           |
-| type                    | enum `cash` / `wallet` / `bank` / `credit_card` / `savings` | Ver "Yape y Plin" abajo                                 |
-| institution             | text null                                                   | "BCP", "Interbank", ... (para mostrar el logo o color)  |
-| currency                | enum `PEN` / `USD`                                          | **Una cuenta tiene una sola moneda**                    |
-| opening_balance_cents   | bigint                                                      | Saldo inicial (en tarjeta, deuda inicial como negativo) |
-| credit_limit_cents      | bigint null                                                 | Solo en tarjetas                                        |
-| statement_day           | smallint null                                               | Día de corte (tarjeta)                                  |
-| due_day                 | smallint null                                               | Día de pago (tarjeta)                                   |
-| card_group_id           | uuid null                                                   | Une las dos cuentas PEN/USD de una **tarjeta bimoneda** |
-| color, icon, sort_order |                                                             |                                                         |
-| archived_at             | timestamptz null                                            | Se archiva, nunca se borra si tiene movimientos         |
+| Columna                 | Tipo                                                        | Notas                                                                        |
+| ----------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| space_id                | uuid FK                                                     |                                                                              |
+| name                    | text                                                        | "Efectivo", "BCP", "Visa BCP"                                                |
+| type                    | enum `cash` / `wallet` / `bank` / `credit_card` / `savings` | Ver "Yape y Plin" abajo                                                      |
+| institution             | text null                                                   | "BCP", "Interbank", ... (para mostrar el logo o color)                       |
+| wallet                  | text null (`yape` / `plin`)                                 | Solo en cuentas `bank`: se muestra "BCP · Yape" (migración `20260930000000`) |
+| currency                | enum `PEN` / `USD`                                          | **Una cuenta tiene una sola moneda**                                         |
+| opening_balance_cents   | bigint                                                      | Saldo inicial (en tarjeta, deuda inicial como negativo)                      |
+| credit_limit_cents      | bigint null                                                 | Solo en tarjetas                                                             |
+| statement_day           | smallint null                                               | Día de corte (tarjeta)                                                       |
+| due_day                 | smallint null                                               | Día de pago (tarjeta)                                                        |
+| card_group_id           | uuid null                                                   | Une las dos cuentas PEN/USD de una **tarjeta bimoneda**                      |
+| color, icon, sort_order |                                                             |                                                                              |
+| archived_at             | timestamptz null                                            | Se archiva, nunca se borra si tiene movimientos                              |
 
 ### `categories`
 

@@ -95,6 +95,19 @@ check(
     ),
   )),
 )
+await as(A, () => db.query(`update accounts set wallet = 'yape' where id = $1`, [id["BCP"]]))
+check(
+  "cuenta bancaria acepta billetera (BCP · Yape)",
+  (await as(A, () => db.query(`select wallet from accounts where id = $1`, [id["BCP"]]))).rows[0].wallet === "yape",
+)
+check(
+  "efectivo no acepta billetera",
+  !!(await fails(() => as(A, () => db.query(`update accounts set wallet = 'plin' where id = $1`, [id["Efectivo"]])))),
+)
+check(
+  "billetera desconocida rechazada",
+  !!(await fails(() => as(A, () => db.query(`update accounts set wallet = 'tunki' where id = $1`, [id["BCP"]])))),
+)
 
 const cat = (name, kind = "expense") => catsA.rows.find((c) => c.name === name && c.kind === kind).id
 

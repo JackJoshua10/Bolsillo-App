@@ -8,13 +8,17 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-interface FieldProps extends Omit<React.ComponentProps<"input">, "id"> {
+interface FieldProps extends Omit<React.ComponentProps<"input">, "id" | "prefix"> {
   label: string
   errors?: string[]
+  /** Texto fijo a la izquierda, por ejemplo "S/" */
+  prefix?: string
+  /** Ayuda debajo del campo */
+  hint?: string
 }
 
 /** Campo con etiqueta y errores accesibles. Alto de 44px para dedos. */
-export function Field({ label, errors, className, type, ...props }: FieldProps) {
+export function Field({ label, errors, prefix, hint, className, type, ...props }: FieldProps) {
   const id = useId()
   const errorId = `${id}-error`
   const [visible, setVisible] = useState(false)
@@ -27,12 +31,17 @@ export function Field({ label, errors, className, type, ...props }: FieldProps) 
         {label}
       </Label>
       <div className="relative">
+        {prefix && (
+          <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center num text-sm text-muted-foreground">
+            {prefix}
+          </span>
+        )}
         <Input
           id={id}
           type={isPassword && visible ? "text" : type}
           aria-invalid={hasError || undefined}
           aria-describedby={hasError ? errorId : undefined}
-          className={cn("h-11 bg-surface px-3 text-base", isPassword && "pr-11", className)}
+          className={cn("h-11 bg-surface px-3 text-base", isPassword && "pr-11", prefix && "pl-11 num", className)}
           {...props}
         />
         {isPassword && (
@@ -46,10 +55,12 @@ export function Field({ label, errors, className, type, ...props }: FieldProps) 
           </button>
         )}
       </div>
-      {hasError && (
+      {hasError ? (
         <p id={errorId} className="text-xs text-destructive">
           {errors![0]}
         </p>
+      ) : (
+        hint && <p className="text-xs text-muted-foreground">{hint}</p>
       )}
     </div>
   )

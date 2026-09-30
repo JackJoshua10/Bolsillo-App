@@ -6,7 +6,7 @@ import { useActionState } from "react"
 import { Button } from "@/components/ui/button"
 import type { FormState } from "@/lib/form-state"
 import { requestPasswordReset, signIn, signInWithGoogle, signUp, updatePassword } from "@/server/actions/auth"
-import { Divider, Field, FormAlert, SubmitButton } from "./fields"
+import { Divider, Field, FormAlert, SubmitButton } from "@/components/forms/fields"
 
 export function LoginForm({ next, notice }: { next?: string; notice?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(signIn, undefined)

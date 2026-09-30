@@ -1,14 +1,9 @@
 import { cn } from "@/lib/utils"
-import type { Currency } from "@/lib/money"
+import type { TransactionItem } from "@/types/finance"
 import { AmountDisplay } from "./amount-display"
 
 interface TransactionRowProps {
-  type: "expense" | "income" | "transfer"
-  description: string
-  category: string
-  account: string
-  cents: number
-  currency: Currency
+  transaction: TransactionItem
   isFirst?: boolean
   isLast?: boolean
 }
@@ -17,16 +12,13 @@ interface TransactionRowProps {
  * Fila del "ledger spine": una línea vertical fina con un nodo por movimiento.
  * El nodo es citrino en ingresos y neutro en gastos.
  */
-export function TransactionRow({
-  type,
-  description,
-  category,
-  account,
-  cents,
-  currency,
-  isFirst,
-  isLast,
-}: TransactionRowProps) {
+export function TransactionRow({ transaction: t, isFirst, isLast }: TransactionRowProps) {
+  const isTransfer = t.type === "transfer"
+  const title = t.description || t.categoryName || (isTransfer ? "Transferencia" : "Movimiento")
+  const subtitle = isTransfer
+    ? `${t.accountLabel} → ${t.toAccountLabel ?? ""}`
+    : [t.description ? t.categoryName : null, t.accountLabel].filter(Boolean).join(" · ")
+
   return (
     <li className="relative flex items-center gap-4 py-3 pl-6">
       <span
@@ -40,21 +32,19 @@ export function TransactionRow({
         aria-hidden
         className={cn(
           "absolute top-1/2 left-0 size-[11px] -translate-y-1/2 rounded-full border",
-          type === "income" ? "border-brand-text bg-brand" : "border-muted-foreground/50 bg-background",
+          t.type === "income" ? "border-brand-text bg-brand" : "border-muted-foreground/50 bg-background",
         )}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm">{description}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {category} · {account}
-        </p>
+        <p className="truncate text-sm">{title}</p>
+        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
       </div>
       <AmountDisplay
-        cents={cents}
-        currency={currency}
-        kind={type === "transfer" ? "neutral" : type}
+        cents={t.amountCents}
+        currency={t.currency}
+        kind={t.type === "expense" ? "expense" : t.type === "income" ? "income" : "neutral"}
         size="sm"
-        className={type === "transfer" ? "text-muted-foreground" : undefined}
+        className={isTransfer ? "text-muted-foreground" : undefined}
       />
     </li>
   )
