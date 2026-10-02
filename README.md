@@ -17,10 +17,11 @@ App de finanzas personales para registrar gastos, ingresos y transferencias en s
 | [04 · Funcionalidades y roadmap](docs/04-funcionalidades-y-roadmap.md) | Pantallas y fases (MVP → v2 → v3)                                      |
 | [05 · Atajo de iOS](docs/05-atajo-ios.md)                              | Registro rápido desde el Centro de Control                             |
 | [06 · Configurar Supabase](docs/06-configurar-supabase.md)             | Crear el proyecto, variables, tablas, correos y Google                 |
+| [07 · Estado y continuación](docs/07-estado-y-continuacion.md)         | Dónde estamos, decisiones pendientes y cómo retomar en otra PC         |
 
 ## Estado
 
-🟡 **Fase 0 · Cimientos**: proyecto base, diseño y esquema de base de datos listos. Falta conectar Supabase y Vercel.
+🟡 **Fase 1 · MVP personal en curso**: login, bienvenida, registro rápido de gastos/ingresos e Inicio real. Ver [07 · Estado y continuación](docs/07-estado-y-continuacion.md).
 
 ## Desarrollo
 
