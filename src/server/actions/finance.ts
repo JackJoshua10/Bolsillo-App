@@ -5,7 +5,8 @@ import { redirect } from "next/navigation"
 
 import { fieldErrorsFrom, type FormState } from "@/lib/form-state"
 import { createClient } from "@/lib/supabase/server"
-import { onboardingSchema, transactionSchema } from "@/schemas/finance"
+import { impliedUsdToPen } from "@/lib/money"
+import { onboardingSchema, transactionSchema, transferSchema } from "@/schemas/finance"
 import type { Account, PaymentMethod } from "@/types/finance"
 import { getActiveSpaceId, listAccounts } from "../finance"
 
@@ -133,4 +134,54 @@ export async function createTransaction(_prev: FormState, formData: FormData): P
 
   revalidatePath("/", "layout")
   return { ok: true, message: type === "expense" ? "Gasto registrado" : "Ingreso registrado" }
+}
+
+/** Mensaje según el caso: pagar tarjeta, cambiar dólares o mover dinero. */
+function transferMessage(from: Account, to: Account) {
+  if (to.type === "credit_card") return "Pago de tarjeta registrado"
+  if (from.currency !== to.currency) return "Cambio registrado"
+  return "Transferencia registrada"
+}
+
+export async function createTransfer(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = transferSchema.safeParse({
+    amount: str(formData, "amount"),
+    toAmount: str(formData, "toAmount"),
+    accountId: str(formData, "accountId"),
+    toAccountId: str(formData, "toAccountId"),
+    description: str(formData, "description") || undefined,
+    occurredOn: str(formData, "occurredOn"),
+  })
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+
+  const { amount, toAmount, accountId, toAccountId, description, occurredOn } = parsed.data
+  const spaceId = await getActiveSpaceId()
+  const accounts = await listAccounts(spaceId)
+  const from = accounts.find((a) => a.id === accountId)
+  const to = accounts.find((a) => a.id === toAccountId)
+  if (!from) return { fieldErrors: { accountId: ["Elige de dónde sale"] } }
+  if (!to) return { fieldErrors: { toAccountId: ["Elige a dónde va"] } }
+
+  const crossCurrency = from.currency !== to.currency
+  if (crossCurrency && toAmount <= 0) return { fieldErrors: { toAmount: ["¿Cuánto recibiste?"] } }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("transactions").insert({
+    space_id: spaceId,
+    type: "transfer",
+    account_id: from.id,
+    amount_cents: amount,
+    currency: from.currency, // la base de datos igual la toma de la cuenta
+    to_account_id: to.id,
+    to_amount_cents: crossCurrency ? toAmount : amount,
+    exchange_rate: crossCurrency ? impliedUsdToPen(amount, from.currency, toAmount, to.currency) : null,
+    payment_method: from.type === "bank" ? "bank_transfer" : null,
+    description: description ?? null,
+    occurred_on: occurredOn,
+    source: "app",
+  })
+  if (error) return { error: GENERIC_ERROR }
+
+  revalidatePath("/", "layout")
+  return { ok: true, message: transferMessage(from, to) }
 }

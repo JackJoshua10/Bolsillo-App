@@ -1,3 +1,4 @@
+import { formatMoney } from "@/lib/money"
 import { cn } from "@/lib/utils"
 import type { TransactionItem } from "@/types/finance"
 import { AmountDisplay } from "./amount-display"
@@ -15,8 +16,9 @@ interface TransactionRowProps {
 export function TransactionRow({ transaction: t, isFirst, isLast }: TransactionRowProps) {
   const isTransfer = t.type === "transfer"
   const title = t.description || t.categoryName || (isTransfer ? "Transferencia" : "Movimiento")
+  const received = t.toAmountCents !== null && t.toCurrency ? ` · ${formatMoney(t.toAmountCents, t.toCurrency)}` : ""
   const subtitle = isTransfer
-    ? `${t.accountLabel} → ${t.toAccountLabel ?? ""}`
+    ? `${t.accountLabel} → ${t.toAccountLabel ?? ""}${received}`
     : [t.description ? t.categoryName : null, t.accountLabel].filter(Boolean).join(" · ")
 
   return (

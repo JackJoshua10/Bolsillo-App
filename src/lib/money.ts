@@ -88,6 +88,16 @@ export function parseAmountToCents(input: string): number | null {
   return Number.isSafeInteger(cents) ? cents : null
 }
 
+/**
+ * Tipo de cambio implícito de una operación entre monedas (1 USD = rate PEN),
+ * redondeado a 6 decimales como `transactions.exchange_rate`. Null si es la misma moneda.
+ */
+export function impliedUsdToPen(fromCents: number, from: Currency, toCents: number, to: Currency) {
+  if (from === to || fromCents <= 0 || toCents <= 0) return null
+  const [pen, usd] = from === "USD" ? [toCents, fromCents] : [fromCents, toCents]
+  return Math.round((pen / usd) * 1e6) / 1e6
+}
+
 /** Convierte céntimos entre monedas con un tipo de cambio (1 USD = rate PEN). */
 export function convertCents(cents: number, from: Currency, to: Currency, usdToPen: number) {
   if (from === to) return cents

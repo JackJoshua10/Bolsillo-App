@@ -63,11 +63,12 @@ interface TransactionRow {
   type: TransactionItem["type"]
   amount_cents: number
   currency: Currency
+  to_amount_cents: number | null
   description: string | null
   occurred_on: string
   category: { name: string; icon: string | null } | null
   account: { name: string; wallet: Account["wallet"] } | null
-  to_account: { name: string; wallet: Account["wallet"] } | null
+  to_account: { name: string; wallet: Account["wallet"]; currency: Currency } | null
 }
 
 export async function listRecentTransactions(spaceId: string, limit = 15): Promise<TransactionItem[]> {
@@ -75,10 +76,10 @@ export async function listRecentTransactions(spaceId: string, limit = 15): Promi
   const { data, error } = await supabase
     .from("transactions")
     .select(
-      `id, type, amount_cents, currency, description, occurred_on,
+      `id, type, amount_cents, currency, to_amount_cents, description, occurred_on,
        category:categories(name, icon),
        account:accounts!transactions_account_id_fkey(name, wallet),
-       to_account:accounts!transactions_to_account_id_fkey(name, wallet)`,
+       to_account:accounts!transactions_to_account_id_fkey(name, wallet, currency)`,
     )
     .eq("space_id", spaceId)
     .is("deleted_at", null)
@@ -88,18 +89,23 @@ export async function listRecentTransactions(spaceId: string, limit = 15): Promi
     .overrideTypes<TransactionRow[], { merge: false }>()
   if (error) throw error
 
-  return data.map((t) => ({
-    id: t.id,
-    type: t.type,
-    amountCents: Number(t.amount_cents),
-    currency: t.currency,
-    description: t.description,
-    occurredOn: t.occurred_on,
-    categoryName: t.category?.name ?? null,
-    categoryIcon: t.category?.icon ?? null,
-    accountLabel: t.account ? accountLabel(t.account) : "",
-    toAccountLabel: t.to_account ? accountLabel(t.to_account) : null,
-  }))
+  return data.map((t) => {
+    const crossCurrency = t.to_account && t.to_account.currency !== t.currency
+    return {
+      id: t.id,
+      type: t.type,
+      amountCents: Number(t.amount_cents),
+      currency: t.currency,
+      description: t.description,
+      occurredOn: t.occurred_on,
+      categoryName: t.category?.name ?? null,
+      categoryIcon: t.category?.icon ?? null,
+      accountLabel: t.account ? accountLabel(t.account) : "",
+      toAccountLabel: t.to_account ? accountLabel(t.to_account) : null,
+      toAmountCents: crossCurrency ? Number(t.to_amount_cents) : null,
+      toCurrency: crossCurrency ? t.to_account!.currency : null,
+    }
+  })
 }
 
 export interface MonthSummary {

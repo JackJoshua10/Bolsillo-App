@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { convertCents, formatMoney, parseAmountToCents } from "./money"
+import { convertCents, formatMoney, impliedUsdToPen, parseAmountToCents } from "./money"
 
 describe("formatMoney", () => {
   it("formatea soles y dólares", () => {
@@ -49,5 +49,23 @@ describe("convertCents", () => {
     expect(convertCents(1000, "USD", "PEN", 3.75)).toBe(3750)
     expect(convertCents(3750, "PEN", "USD", 3.75)).toBe(1000)
     expect(convertCents(1234, "PEN", "PEN", 3.75)).toBe(1234)
+  })
+})
+
+describe("impliedUsdToPen", () => {
+  it("calcula el tipo de cambio en ambos sentidos", () => {
+    // Compro 100 dólares pagando S/ 375.50
+    expect(impliedUsdToPen(37550, "PEN", 10000, "USD")).toBe(3.755)
+    // Vendo 100 dólares y recibo S/ 371.20
+    expect(impliedUsdToPen(10000, "USD", 37120, "PEN")).toBe(3.712)
+  })
+
+  it("redondea a 6 decimales", () => {
+    expect(impliedUsdToPen(10000, "PEN", 2667, "USD")).toBe(3.749531)
+  })
+
+  it("devuelve null en la misma moneda o sin montos", () => {
+    expect(impliedUsdToPen(1000, "PEN", 1000, "PEN")).toBeNull()
+    expect(impliedUsdToPen(0, "PEN", 1000, "USD")).toBeNull()
   })
 })

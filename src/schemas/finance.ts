@@ -46,11 +46,33 @@ export const onboardingSchema = z
   })
   .refine((v) => v.cash || v.bank || v.card, { error: "Elige al menos una cuenta para empezar." })
 
+const description = z.string().trim().max(140, { error: "Máximo 140 caracteres" }).optional()
+const occurredOn = z.iso.date({ error: "Fecha inválida" })
+
 export const transactionSchema = z.object({
   type: z.enum(["expense", "income"]),
   amount: positiveAmount,
   accountId: z.uuid({ error: "Elige una cuenta" }),
   categoryId: z.uuid({ error: "Elige una categoría" }),
-  description: z.string().trim().max(140, { error: "Máximo 140 caracteres" }).optional(),
-  occurredOn: z.iso.date({ error: "Fecha inválida" }),
+  description,
+  occurredOn,
 })
+
+/**
+ * Transferencia entre cuentas propias: pagar la tarjeta, sacar efectivo, cambiar dólares.
+ * `toAmount` (lo recibido) solo se usa si las monedas son distintas; eso se valida
+ * en el servidor, que es quien conoce la moneda de cada cuenta. Vacío = 0.
+ */
+export const transferSchema = z
+  .object({
+    amount: positiveAmount,
+    toAmount: amount,
+    accountId: z.uuid({ error: "Elige de dónde sale" }),
+    toAccountId: z.uuid({ error: "Elige a dónde va" }),
+    description,
+    occurredOn,
+  })
+  .refine((v) => v.accountId !== v.toAccountId, {
+    error: "Elige una cuenta distinta",
+    path: ["toAccountId"],
+  })

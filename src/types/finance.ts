@@ -37,6 +37,9 @@ export interface TransactionItem {
   categoryIcon: string | null
   accountLabel: string
   toAccountLabel: string | null
+  /** Solo en transferencias entre monedas: lo que llegó a la cuenta destino. */
+  toAmountCents: number | null
+  toCurrency: Currency | null
 }
 
 export const WALLET_LABEL: Record<Wallet, string> = { yape: "Yape", plin: "Plin" }
