@@ -1,5 +1,6 @@
-import { LogOut } from "lucide-react"
+import { ChevronRight, LogOut } from "lucide-react"
 import type { Metadata } from "next"
+import Link from "next/link"
 
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,17 @@ export default async function ProfilePage() {
       <section className="mt-6 border-y border-line bg-surface px-5 py-4">
         <p className="font-medium">{profile.display_name ?? "Sin nombre"}</p>
         <p className="text-sm text-muted-foreground">{profile.email}</p>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="px-5 text-xs tracking-wide text-muted-foreground uppercase">Finanzas</h2>
+        <Link
+          href="/cuentas"
+          className="mt-3 flex items-center justify-between border-y border-line bg-surface px-5 py-3"
+        >
+          <span className="text-sm">Cuentas</span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
       </section>
 
       <section className="mt-8">

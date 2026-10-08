@@ -1,6 +1,6 @@
 "use client"
 
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { FormSheet } from "@/components/forms/form-sheet"
 import type { Account, Category, TransactionItem } from "@/types/finance"
 import { TransactionForm } from "./transaction-form"
 
@@ -19,19 +19,13 @@ interface TransactionSheetProps {
 /** Hoja inferior con el formulario de movimiento (nuevo o editar). */
 export function TransactionSheet({ open, onOpenChange, transaction, ...formProps }: TransactionSheetProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="bottom"
-        className="mx-auto max-h-[92dvh] max-w-md gap-0 overflow-y-auto rounded-t-2xl border-line bg-background pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-none"
-      >
-        <SheetHeader className="px-5 pt-5 pb-3">
-          <SheetTitle>{transaction ? "Editar movimiento" : "Nuevo movimiento"}</SheetTitle>
-          <SheetDescription className="sr-only">
-            {transaction ? "Cambia o borra este movimiento" : "Registra un gasto, un ingreso o una transferencia"}
-          </SheetDescription>
-        </SheetHeader>
-        <TransactionForm key={transaction?.id ?? "new"} transaction={transaction} {...formProps} />
-      </SheetContent>
-    </Sheet>
+    <FormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={transaction ? "Editar movimiento" : "Nuevo movimiento"}
+      description={transaction ? "Cambia o borra este movimiento" : "Registra un gasto, un ingreso o una transferencia"}
+    >
+      <TransactionForm key={transaction?.id ?? "new"} transaction={transaction} {...formProps} />
+    </FormSheet>
   )
 }

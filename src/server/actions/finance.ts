@@ -5,10 +5,19 @@ import { redirect } from "next/navigation"
 
 import { fieldErrorsFrom, type FormState } from "@/lib/form-state"
 import { createClient } from "@/lib/supabase/server"
+import { todayISO } from "@/lib/dates"
 import { impliedUsdToPen } from "@/lib/money"
-import { onboardingSchema, transactionSchema, transferSchema } from "@/schemas/finance"
+import {
+  accountCreateSchema,
+  accountRuleErrors,
+  accountUpdateSchema,
+  balanceAdjustSchema,
+  onboardingSchema,
+  transactionSchema,
+  transferSchema,
+} from "@/schemas/finance"
 import type { Account, PaymentMethod } from "@/types/finance"
-import { getActiveSpaceId, listAccounts } from "../finance"
+import { getActiveSpaceId, listAccounts, listArchivedAccounts } from "../finance"
 
 const GENERIC_ERROR = "No pudimos guardar. Revisa tu conexión e inténtalo de nuevo."
 
@@ -238,4 +247,160 @@ export async function deleteTransaction(id: string) {
 
 export async function restoreTransaction(id: string) {
   return setDeleted(id, false)
+}
+
+// ─────────────────────────────────────────────────────────────
+// Cuentas
+// ─────────────────────────────────────────────────────────────
+
+interface AccountFieldsInput {
+  name: string
+  institution: string
+  wallet: "" | "yape" | "plin"
+  limit: number
+  statementDay?: number
+  dueDay?: number
+}
+
+/** Columnas editables según el tipo (la base de datos rechaza datos de tarjeta en otras cuentas). */
+function accountColumns(type: Account["type"], currency: Account["currency"], v: AccountFieldsInput) {
+  const isCard = type === "credit_card"
+  const defaultName = type === "cash" ? (currency === "USD" ? "Dólares" : "Efectivo") : "Ahorros"
+  return {
+    name: v.name || v.institution || defaultName,
+    institution: type === "cash" ? null : v.institution || null,
+    // Yape y Plin solo existen en soles y van ligados a una cuenta bancaria
+    wallet: type === "bank" && currency === "PEN" && v.wallet ? v.wallet : null,
+    credit_limit_cents: isCard ? v.limit : null,
+    statement_day: isCard ? (v.statementDay ?? null) : null,
+    due_day: isCard ? (v.dueDay ?? null) : null,
+  }
+}
+
+function accountFieldsFrom(formData: FormData) {
+  return {
+    name: str(formData, "name"),
+    institution: str(formData, "institution"),
+    wallet: str(formData, "wallet"),
+    limit: str(formData, "limit"),
+    statementDay: str(formData, "statementDay"),
+    dueDay: str(formData, "dueDay"),
+  }
+}
+
+export async function createAccount(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = accountCreateSchema.safeParse({
+    type: str(formData, "type"),
+    currency: str(formData, "currency") || "PEN",
+    balance: str(formData, "balance"),
+    ...accountFieldsFrom(formData),
+  })
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+
+  const { type, currency, balance } = parsed.data
+  const spaceId = await getActiveSpaceId()
+  const [active, archived] = await Promise.all([listAccounts(spaceId), listArchivedAccounts(spaceId)])
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("accounts").insert({
+    space_id: spaceId,
+    type,
+    currency,
+    ...accountColumns(type, currency, parsed.data),
+    // La deuda de una tarjeta se guarda como saldo negativo
+    opening_balance_cents: type === "credit_card" ? -balance : balance,
+    sort_order: active.length + archived.length,
+  })
+  if (error) return { error: GENERIC_ERROR }
+
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Cuenta agregada" }
+}
+
+export async function updateAccount(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = accountUpdateSchema.safeParse({ id: str(formData, "id"), ...accountFieldsFrom(formData) })
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+
+  const spaceId = await getActiveSpaceId()
+  const account = (await listAccounts(spaceId)).find((a) => a.id === parsed.data.id)
+  if (!account) return { error: GENERIC_ERROR }
+
+  const ruleErrors = accountRuleErrors({ ...parsed.data, type: account.type })
+  if (Object.keys(ruleErrors).length > 0) return { fieldErrors: ruleErrors }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from("accounts")
+    .update(accountColumns(account.type, account.currency, parsed.data))
+    .eq("id", account.id)
+    .eq("space_id", spaceId)
+  if (error) return { error: GENERIC_ERROR }
+
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Cambios guardados" }
+}
+
+/**
+ * Deja el saldo igual al real con un movimiento de ajuste por la diferencia.
+ * Así el historial sigue cuadrando (no se toca el saldo inicial).
+ */
+export async function adjustBalance(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = balanceAdjustSchema.safeParse({ id: str(formData, "id"), balance: str(formData, "balance") })
+  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+
+  const spaceId = await getActiveSpaceId()
+  const account = (await listAccounts(spaceId)).find((a) => a.id === parsed.data.id)
+  if (!account) return { error: GENERIC_ERROR }
+
+  const target = account.type === "credit_card" ? -parsed.data.balance : parsed.data.balance
+  const difference = target - account.balanceCents
+  if (difference === 0) return { ok: true, message: "El saldo ya estaba al día" }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from("transactions").insert({
+    space_id: spaceId,
+    type: "adjustment",
+    account_id: account.id,
+    amount_cents: difference,
+    currency: account.currency,
+    description: "Ajuste de saldo",
+    occurred_on: todayISO(),
+    source: "app",
+  })
+  if (error) return { error: GENERIC_ERROR }
+
+  revalidatePath("/", "layout")
+  return { ok: true, message: "Saldo ajustado" }
+}
+
+/** Archiva una cuenta. Solo con saldo 0, para que el patrimonio no cambie sin que se note. */
+export async function archiveAccount(id: string): Promise<FormState> {
+  const spaceId = await getActiveSpaceId()
+  const accounts = await listAccounts(spaceId)
+  const account = accounts.find((a) => a.id === id)
+  if (!account) return { error: GENERIC_ERROR }
+  if (account.balanceCents !== 0) {
+    return { error: "Deja el saldo en 0 antes de archivarla: transfiere lo que queda o ajusta el saldo." }
+  }
+  if (accounts.length === 1) return { error: "Necesitas al menos una cuenta activa." }
+
+  return setArchived(spaceId, id, true)
+}
+
+export async function restoreAccount(id: string): Promise<FormState> {
+  return setArchived(await getActiveSpaceId(), id, false)
+}
+
+async function setArchived(spaceId: string, id: string, archived: boolean): Promise<FormState> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("accounts")
+    .update({ archived_at: archived ? new Date().toISOString() : null })
+    .eq("id", id)
+    .eq("space_id", spaceId)
+    .select("id")
+  if (error || data.length === 0) return { error: GENERIC_ERROR }
+
+  revalidatePath("/", "layout")
+  return { ok: true, message: archived ? "Cuenta archivada" : "Cuenta restaurada" }
 }

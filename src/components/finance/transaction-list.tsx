@@ -15,6 +15,12 @@ function groupByDay(items: TransactionItem[]) {
   return [...groups.entries()]
 }
 
+/** Los ajustes de saldo y los movimientos de cuentas archivadas no se editan. */
+function isEditable(t: TransactionItem, accounts: Account[]) {
+  const active = (id: string | null) => id === null || accounts.some((a) => a.id === id)
+  return t.type !== "adjustment" && active(t.accountId) && active(t.toAccountId)
+}
+
 const DELETE_ERROR = "No pudimos borrarlo. Revisa tu conexión e inténtalo de nuevo."
 
 interface TransactionListProps {
@@ -67,7 +73,7 @@ export function TransactionList({ transactions, accounts, categories, today }: T
                 transaction={t}
                 isFirst={i === 0}
                 isLast={i === items.length - 1}
-                onSelect={t.type === "adjustment" ? undefined : () => select(t)}
+                onSelect={isEditable(t, accounts) ? () => select(t) : undefined}
               />
             ))}
           </ul>

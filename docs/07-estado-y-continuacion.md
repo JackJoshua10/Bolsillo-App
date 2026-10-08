@@ -8,7 +8,7 @@
 | Fase             | Estado                                                                                                                                        |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | 0 · Cimientos    | ✅ Proyecto, diseño, migración inicial, PWA. Pendiente: validar el tono exacto del citrino con una captura de la plantilla y conectar Vercel. |
-| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida (crear cuentas), registro rápido de gasto/ingreso/transferencia, Inicio con datos reales.      |
+| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida, registro de gasto/ingreso/transferencia, Inicio, Movimientos y Cuentas.                       |
 
 Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-roadmap.md).
 
@@ -18,8 +18,10 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
 - **`/bienvenida`**: crea Efectivo, una cuenta bancaria (con Yape/Plin) y una tarjeta de crédito, cada una con su saldo inicial. El layout de `(app)` redirige aquí si no hay cuentas.
 - **Botón +**: hoja para registrar un **gasto o ingreso** (monto, categoría, cuenta, descripción, fecha). Recuerda la última cuenta usada.
 - **Transferencias** (pestaña del botón +, solo si hay 2+ cuentas): desde/hacia. Si el destino es una tarjeta con deuda, muestra la deuda y "Pagar todo". Entre monedas pide el monto recibido y guarda el tipo de cambio implícito (`impliedUsdToPen`). No cuentan como gasto ni ingreso del mes.
-- **Inicio**: patrimonio neto (suma por moneda, la tarjeta en negativo), gastado e ingresos del mes, cuentas y últimos 15 movimientos.
-- **Perfil**: nombre, correo, tema (claro/oscuro/sistema) y cerrar sesión. **Movimientos** y **Análisis** son placeholders.
+- **Inicio**: patrimonio neto (suma por moneda, la tarjeta en negativo), gastado e ingresos del mes, cuentas ("Gestionar" → `/cuentas`) y últimos 15 movimientos ("Ver todo" → `/movimientos`).
+- **`/movimientos`**: periodo mes a mes (respeta `month_start_day`), filtros por tipo/cuenta/categoría en la URL (`?periodo&tipo&cuenta&categoria&q`, ver `src/lib/transaction-filters.ts`), búsqueda por descripción en todos los meses y totales. Tocar un movimiento (aquí o en Inicio) lo edita en la misma hoja del +; borrar es lógico (`deleted_at`) con "Deshacer". Crear y editar usan una sola acción: `saveTransaction`.
+- **`/cuentas`** (desde Inicio o Perfil): agregar efectivo/banco/tarjeta/ahorros en PEN o USD; editar; **ajustar saldo** (crea un movimiento `adjustment` por la diferencia, no toca el saldo inicial); **archivar** solo con saldo 0 (con "Deshacer" y sección "Archivadas" para restaurar). Las tarjetas muestran línea, disponible y próximas fechas de corte y pago. Los ajustes y los movimientos de cuentas archivadas no se pueden editar.
+- **Perfil**: nombre, correo, enlace a Cuentas, tema (claro/oscuro/sistema) y cerrar sesión. **Análisis** es un placeholder.
 
 ## Decisión pendiente (preguntar al usuario)
 
@@ -34,11 +36,10 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
 ## Próximos pasos (Fase 1)
 
 1. Resolver la decisión de arriba y ajustar la bienvenida y el registro rápido si hace falta.
-2. **Movimientos**: lista completa con filtros, editar, borrar (borrado lógico con `deleted_at`) y deshacer.
-3. **Cuentas**: agregar más (ahorros, dólares, más tarjetas), editar, ajustar saldo (`type = 'adjustment'`) y archivar.
-4. **Perfil**: día de inicio de mes (`profiles.month_start_day`; la lógica `monthRange` ya existe).
-5. Conectar **Vercel** para usarla en el iPhone.
-6. API `/api/v1` + **Atajo de iOS** ([05](05-atajo-ios.md)).
+2. **Perfil**: día de inicio de mes (`profiles.month_start_day`; la lógica `monthRange` ya existe), moneda base y modo privado.
+3. **Categorías** (CRUD con ícono y color) y **Análisis** (donut del mes, barras de 6 meses).
+4. Conectar **Vercel** para usarla en el iPhone.
+5. API `/api/v1` + **Atajo de iOS** ([05](05-atajo-ios.md)).
 
 ## Recordatorios para Claude
 

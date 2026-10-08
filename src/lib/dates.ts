@@ -79,3 +79,15 @@ export function dayLabel(date: string, today: string) {
   if (date === addDays(today, -1)) return "Ayer"
   return weekdayDate.format(toUTC(date))
 }
+
+/** Próxima fecha (hoy incluido) que cae en el día `day` del mes, recortado en meses cortos. */
+export function nextMonthDay(today: string, day: number) {
+  const t = toUTC(today)
+  const thisMonth = clampedDay(t.getUTCFullYear(), t.getUTCMonth(), day)
+  return thisMonth >= today ? thisMonth : clampedDay(t.getUTCFullYear(), t.getUTCMonth() + 1, day)
+}
+
+/** "15 oct." */
+export function shortDateLabel(date: string) {
+  return shortDate.format(toUTC(date))
+}

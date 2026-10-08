@@ -15,14 +15,14 @@ export const getActiveSpaceId = cache(async () => {
   return profile.default_space_id
 })
 
-export const listAccounts = cache(async (spaceId: string): Promise<Account[]> => {
+async function fetchAccounts(spaceId: string, archived: boolean): Promise<Account[]> {
   const supabase = await createClient()
+  const accountsQuery = supabase
+    .from("accounts")
+    .select("id, name, type, currency, institution, wallet, credit_limit_cents, statement_day, due_day")
+    .eq("space_id", spaceId)
   const [{ data: accounts, error }, { data: balances, error: balancesError }] = await Promise.all([
-    supabase
-      .from("accounts")
-      .select("id, name, type, currency, institution, wallet, credit_limit_cents, statement_day, due_day")
-      .eq("space_id", spaceId)
-      .is("archived_at", null)
+    (archived ? accountsQuery.not("archived_at", "is", null) : accountsQuery.is("archived_at", null))
       .order("sort_order")
       .order("created_at"),
     supabase.from("account_balances").select("account_id, balance_cents").eq("space_id", spaceId),
@@ -44,7 +44,12 @@ export const listAccounts = cache(async (spaceId: string): Promise<Account[]> =>
     dueDay: a.due_day,
     balanceCents: balanceById.get(a.id) ?? 0,
   }))
-})
+}
+
+/** Cuentas activas (las que se usan en formularios, saldos y patrimonio). */
+export const listAccounts = cache((spaceId: string) => fetchAccounts(spaceId, false))
+
+export const listArchivedAccounts = cache((spaceId: string) => fetchAccounts(spaceId, true))
 
 export const listCategories = cache(async (spaceId: string): Promise<Category[]> => {
   const supabase = await createClient()

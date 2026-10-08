@@ -8,17 +8,7 @@ import { Segmented } from "@/components/forms/segmented"
 import type { FormState } from "@/lib/form-state"
 import { cn } from "@/lib/utils"
 import { createInitialAccounts } from "@/server/actions/finance"
-
-const BANKS = [
-  "BCP",
-  "Interbank",
-  "BBVA",
-  "Scotiabank",
-  "BanBif",
-  "Banco de la Nación",
-  "Caja Arequipa",
-  "Caja Huancayo",
-]
+import { BANKS } from "@/types/finance"
 
 const WALLETS = [
   { value: "", label: "Ninguna" },

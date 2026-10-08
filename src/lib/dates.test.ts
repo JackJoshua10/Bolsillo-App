@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { addDays, dayLabel, monthRange, todayISO } from "./dates"
+import { addDays, dayLabel, monthRange, nextMonthDay, shortDateLabel, todayISO } from "./dates"
 
 describe("todayISO", () => {
   it("usa la hora de Lima (UTC−5)", () => {
@@ -44,5 +44,28 @@ describe("dayLabel", () => {
     expect(dayLabel("2026-09-30", "2026-09-30")).toBe("Hoy")
     expect(dayLabel("2026-09-29", "2026-09-30")).toBe("Ayer")
     expect(dayLabel("2026-09-23", "2026-09-30")).toMatch(/23/)
+  })
+})
+
+describe("nextMonthDay", () => {
+  it("usa este mes si el día no pasó (hoy incluido)", () => {
+    expect(nextMonthDay("2026-10-08", 15)).toBe("2026-10-15")
+    expect(nextMonthDay("2026-10-08", 8)).toBe("2026-10-08")
+  })
+
+  it("pasa al mes siguiente si el día ya pasó", () => {
+    expect(nextMonthDay("2026-10-20", 15)).toBe("2026-11-15")
+    expect(nextMonthDay("2026-12-20", 5)).toBe("2027-01-05")
+  })
+
+  it("recorta al último día en meses cortos", () => {
+    expect(nextMonthDay("2026-02-10", 31)).toBe("2026-02-28")
+    expect(nextMonthDay("2026-01-31", 30)).toBe("2026-02-28")
+  })
+})
+
+describe("shortDateLabel", () => {
+  it("muestra día y mes", () => {
+    expect(shortDateLabel("2026-10-15")).toMatch(/^15 oct/)
   })
 })

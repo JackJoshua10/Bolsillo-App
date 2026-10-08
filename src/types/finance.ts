@@ -45,6 +45,26 @@ export interface TransactionItem {
   toCurrency: Currency | null
 }
 
+/** Sugerencias para el campo "Banco" (se puede escribir otro). */
+export const BANKS = [
+  "BCP",
+  "Interbank",
+  "BBVA",
+  "Scotiabank",
+  "BanBif",
+  "Banco de la Nación",
+  "Caja Arequipa",
+  "Caja Huancayo",
+]
+
+export const ACCOUNT_TYPE_LABEL: Record<AccountType, string> = {
+  cash: "Efectivo",
+  wallet: "Billetera digital",
+  bank: "Cuenta bancaria",
+  credit_card: "Tarjeta de crédito",
+  savings: "Ahorros",
+}
+
 export const WALLET_LABEL: Record<Wallet, string> = { yape: "Yape", plin: "Plin" }
 
 /** "BCP · Yape", "Efectivo", "Visa BCP" */

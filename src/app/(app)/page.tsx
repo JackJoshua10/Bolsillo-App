@@ -70,7 +70,12 @@ export default async function HomePage() {
 
       {/* Cuentas: paneles tonales separados por líneas finas */}
       <section className="mt-8">
-        <h2 className="px-5 text-xs tracking-wide text-muted-foreground uppercase">Cuentas</h2>
+        <div className="flex items-baseline justify-between px-5">
+          <h2 className="text-xs tracking-wide text-muted-foreground uppercase">Cuentas</h2>
+          <Link href="/cuentas" className="text-xs text-brand-text underline-offset-4 hover:underline">
+            Gestionar
+          </Link>
+        </div>
         <div className="mt-3 flex [scrollbar-width:none] gap-px overflow-x-auto border-y border-line bg-line">
           {accounts.map((a) => (
             <AccountTile

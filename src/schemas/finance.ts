@@ -76,3 +76,56 @@ export const transferSchema = z
     error: "Elige una cuenta distinta",
     path: ["toAccountId"],
   })
+
+/** Datos editables de una cuenta (el tipo y la moneda no cambian después de crearla). */
+const accountFields = {
+  name: z.string().trim().max(40, { error: "Máximo 40 caracteres" }),
+  institution: z.string().trim().max(40, { error: "Máximo 40 caracteres" }),
+  wallet: z.enum(["", "yape", "plin"]),
+  limit: amount,
+  statementDay: optionalDay,
+  dueDay: optionalDay,
+}
+
+export const ACCOUNT_FORM_TYPES = ["cash", "bank", "credit_card", "savings"] as const
+
+interface AccountRuleInput {
+  type: (typeof ACCOUNT_FORM_TYPES)[number] | "wallet"
+  name: string
+  institution: string
+  limit: number
+}
+
+/**
+ * Reglas por tipo: la tarjeta necesita nombre y línea; el banco y los ahorros, la entidad.
+ * Se usa al crear (el tipo viene del formulario) y al editar (el tipo viene de la base de datos).
+ */
+export function accountRuleErrors(v: AccountRuleInput) {
+  const errors: Record<string, string[]> = {}
+  if (v.type === "credit_card" && !v.name) errors.name = ["Ponle un nombre, por ejemplo Visa BCP"]
+  if (v.type === "credit_card" && v.limit <= 0) errors.limit = ["Debe ser mayor a 0"]
+  if ((v.type === "bank" || v.type === "savings") && !v.institution) errors.institution = ["¿De qué banco o caja?"]
+  return errors
+}
+
+export const accountCreateSchema = z
+  .object({
+    type: z.enum(ACCOUNT_FORM_TYPES, { error: "Elige un tipo de cuenta" }),
+    currency: z.enum(["PEN", "USD"]),
+    /** Saldo inicial; en tarjetas, la deuda actual */
+    balance: amount,
+    ...accountFields,
+  })
+  .superRefine((v, ctx) => {
+    for (const [field, [message]] of Object.entries(accountRuleErrors(v))) {
+      ctx.addIssue({ code: "custom", message, path: [field] })
+    }
+  })
+
+export const accountUpdateSchema = z.object({ id: z.uuid(), ...accountFields })
+
+export const balanceAdjustSchema = z.object({
+  id: z.uuid(),
+  /** Saldo real; en tarjetas, la deuda real */
+  balance: amount,
+})
