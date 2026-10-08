@@ -7,19 +7,37 @@ interface TransactionRowProps {
   transaction: TransactionItem
   isFirst?: boolean
   isLast?: boolean
+  /** Si viene, la fila se puede tocar (para editar) */
+  onSelect?: () => void
 }
 
 /**
  * Fila del "ledger spine": una línea vertical fina con un nodo por movimiento.
  * El nodo es citrino en ingresos y neutro en gastos.
  */
-export function TransactionRow({ transaction: t, isFirst, isLast }: TransactionRowProps) {
+export function TransactionRow({ transaction: t, isFirst, isLast, onSelect }: TransactionRowProps) {
   const isTransfer = t.type === "transfer"
   const title = t.description || t.categoryName || (isTransfer ? "Transferencia" : "Movimiento")
   const received = t.toAmountCents !== null && t.toCurrency ? ` · ${formatMoney(t.toAmountCents, t.toCurrency)}` : ""
   const subtitle = isTransfer
     ? `${t.accountLabel} → ${t.toAccountLabel ?? ""}${received}`
     : [t.description ? t.categoryName : null, t.accountLabel].filter(Boolean).join(" · ")
+
+  const content = (
+    <>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm">{title}</p>
+        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+      <AmountDisplay
+        cents={t.amountCents}
+        currency={t.currency}
+        kind={t.type === "expense" ? "expense" : t.type === "income" ? "income" : "neutral"}
+        size="sm"
+        className={isTransfer ? "text-muted-foreground" : undefined}
+      />
+    </>
+  )
 
   return (
     <li className="relative flex items-center gap-4 py-3 pl-6">
@@ -37,17 +55,17 @@ export function TransactionRow({ transaction: t, isFirst, isLast }: TransactionR
           t.type === "income" ? "border-brand-text bg-brand" : "border-muted-foreground/50 bg-background",
         )}
       />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm">{title}</p>
-        <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
-      </div>
-      <AmountDisplay
-        cents={t.amountCents}
-        currency={t.currency}
-        kind={t.type === "expense" ? "expense" : t.type === "income" ? "income" : "neutral"}
-        size="sm"
-        className={isTransfer ? "text-muted-foreground" : undefined}
-      />
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={onSelect}
+          className="-my-3 flex min-w-0 flex-1 items-center gap-4 py-3 text-left outline-none focus-visible:bg-surface"
+        >
+          {content}
+        </button>
+      ) : (
+        content
+      )}
     </li>
   )
 }

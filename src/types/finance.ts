@@ -29,6 +29,9 @@ export interface Category {
 export interface TransactionItem {
   id: string
   type: TransactionType
+  accountId: string
+  toAccountId: string | null
+  categoryId: string | null
   amountCents: number
   currency: Currency
   description: string | null

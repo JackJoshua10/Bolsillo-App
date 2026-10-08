@@ -101,7 +101,18 @@ function defaultPaymentMethod(account: Account): PaymentMethod | null {
   return null
 }
 
-export async function createTransaction(_prev: FormState, formData: FormData): Promise<FormState> {
+/** Mensaje según el caso: pagar tarjeta, cambiar dólares o mover dinero. */
+function transferMessage(from: Account, to: Account) {
+  if (to.type === "credit_card") return "Pago de tarjeta registrado"
+  if (from.currency !== to.currency) return "Cambio registrado"
+  return "Transferencia registrada"
+}
+
+type Row = Record<string, unknown>
+type Built = { row: Row; message: string } | { state: FormState }
+
+/** Gasto o ingreso → columnas de `transactions`. */
+function buildTransaction(formData: FormData, accounts: Account[]): Built {
   const parsed = transactionSchema.safeParse({
     type: str(formData, "type"),
     amount: str(formData, "amount"),
@@ -110,40 +121,32 @@ export async function createTransaction(_prev: FormState, formData: FormData): P
     description: str(formData, "description") || undefined,
     occurredOn: str(formData, "occurredOn"),
   })
-  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+  if (!parsed.success) return { state: { fieldErrors: fieldErrorsFrom(parsed.error) } }
 
   const { type, amount, accountId, categoryId, description, occurredOn } = parsed.data
-  const spaceId = await getActiveSpaceId()
-  const account = (await listAccounts(spaceId)).find((a) => a.id === accountId)
-  if (!account) return { fieldErrors: { accountId: ["Elige una cuenta"] } }
+  const account = accounts.find((a) => a.id === accountId)
+  if (!account) return { state: { fieldErrors: { accountId: ["Elige una cuenta"] } } }
 
-  const supabase = await createClient()
-  const { error } = await supabase.from("transactions").insert({
-    space_id: spaceId,
-    type,
-    account_id: account.id,
-    amount_cents: amount,
-    currency: account.currency, // la base de datos igual la toma de la cuenta
-    category_id: categoryId,
-    payment_method: defaultPaymentMethod(account),
-    description: description ?? null,
-    occurred_on: occurredOn,
-    source: "app",
-  })
-  if (error) return { error: GENERIC_ERROR }
-
-  revalidatePath("/", "layout")
-  return { ok: true, message: type === "expense" ? "Gasto registrado" : "Ingreso registrado" }
+  return {
+    row: {
+      type,
+      account_id: account.id,
+      amount_cents: amount,
+      currency: account.currency, // la base de datos igual la toma de la cuenta
+      to_account_id: null,
+      to_amount_cents: null,
+      exchange_rate: null,
+      category_id: categoryId,
+      payment_method: defaultPaymentMethod(account),
+      description: description ?? null,
+      occurred_on: occurredOn,
+    },
+    message: type === "expense" ? "Gasto registrado" : "Ingreso registrado",
+  }
 }
 
-/** Mensaje según el caso: pagar tarjeta, cambiar dólares o mover dinero. */
-function transferMessage(from: Account, to: Account) {
-  if (to.type === "credit_card") return "Pago de tarjeta registrado"
-  if (from.currency !== to.currency) return "Cambio registrado"
-  return "Transferencia registrada"
-}
-
-export async function createTransfer(_prev: FormState, formData: FormData): Promise<FormState> {
+/** Transferencia entre cuentas propias → columnas de `transactions`. */
+function buildTransfer(formData: FormData, accounts: Account[]): Built {
   const parsed = transferSchema.safeParse({
     amount: str(formData, "amount"),
     toAmount: str(formData, "toAmount"),
@@ -152,36 +155,87 @@ export async function createTransfer(_prev: FormState, formData: FormData): Prom
     description: str(formData, "description") || undefined,
     occurredOn: str(formData, "occurredOn"),
   })
-  if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error) }
+  if (!parsed.success) return { state: { fieldErrors: fieldErrorsFrom(parsed.error) } }
 
   const { amount, toAmount, accountId, toAccountId, description, occurredOn } = parsed.data
-  const spaceId = await getActiveSpaceId()
-  const accounts = await listAccounts(spaceId)
   const from = accounts.find((a) => a.id === accountId)
   const to = accounts.find((a) => a.id === toAccountId)
-  if (!from) return { fieldErrors: { accountId: ["Elige de dónde sale"] } }
-  if (!to) return { fieldErrors: { toAccountId: ["Elige a dónde va"] } }
+  if (!from) return { state: { fieldErrors: { accountId: ["Elige de dónde sale"] } } }
+  if (!to) return { state: { fieldErrors: { toAccountId: ["Elige a dónde va"] } } }
 
   const crossCurrency = from.currency !== to.currency
-  if (crossCurrency && toAmount <= 0) return { fieldErrors: { toAmount: ["¿Cuánto recibiste?"] } }
+  if (crossCurrency && toAmount <= 0) return { state: { fieldErrors: { toAmount: ["¿Cuánto recibiste?"] } } }
+
+  return {
+    row: {
+      type: "transfer",
+      account_id: from.id,
+      amount_cents: amount,
+      currency: from.currency,
+      to_account_id: to.id,
+      to_amount_cents: crossCurrency ? toAmount : amount,
+      exchange_rate: crossCurrency ? impliedUsdToPen(amount, from.currency, toAmount, to.currency) : null,
+      category_id: null,
+      payment_method: from.type === "bank" ? "bank_transfer" : null,
+      description: description ?? null,
+      occurred_on: occurredOn,
+    },
+    message: transferMessage(from, to),
+  }
+}
+
+/**
+ * Crea o edita (si viene `id`) un gasto, ingreso o transferencia.
+ * Al editar se reescriben todas las columnas, así se puede cambiar el tipo.
+ */
+export async function saveTransaction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const id = str(formData, "id")
+  const spaceId = await getActiveSpaceId()
+  const accounts = await listAccounts(spaceId)
+
+  const built =
+    str(formData, "type") === "transfer" ? buildTransfer(formData, accounts) : buildTransaction(formData, accounts)
+  if ("state" in built) return built.state
 
   const supabase = await createClient()
-  const { error } = await supabase.from("transactions").insert({
-    space_id: spaceId,
-    type: "transfer",
-    account_id: from.id,
-    amount_cents: amount,
-    currency: from.currency, // la base de datos igual la toma de la cuenta
-    to_account_id: to.id,
-    to_amount_cents: crossCurrency ? toAmount : amount,
-    exchange_rate: crossCurrency ? impliedUsdToPen(amount, from.currency, toAmount, to.currency) : null,
-    payment_method: from.type === "bank" ? "bank_transfer" : null,
-    description: description ?? null,
-    occurred_on: occurredOn,
-    source: "app",
-  })
-  if (error) return { error: GENERIC_ERROR }
+  if (id) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .update(built.row)
+      .eq("id", id)
+      .eq("space_id", spaceId)
+      .is("deleted_at", null)
+      .select("id")
+    if (error || data.length === 0) return { error: GENERIC_ERROR }
+  } else {
+    const { error } = await supabase.from("transactions").insert({ ...built.row, space_id: spaceId, source: "app" })
+    if (error) return { error: GENERIC_ERROR }
+  }
 
   revalidatePath("/", "layout")
-  return { ok: true, message: transferMessage(from, to) }
+  return { ok: true, message: id ? "Cambios guardados" : built.message }
+}
+
+/** Borrado lógico: el movimiento deja de contar, pero se puede deshacer. */
+async function setDeleted(id: string, deleted: boolean) {
+  const spaceId = await getActiveSpaceId()
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("transactions")
+    .update({ deleted_at: deleted ? new Date().toISOString() : null })
+    .eq("id", id)
+    .eq("space_id", spaceId)
+    .select("id")
+  if (error || data.length === 0) return { ok: false as const }
+
+  revalidatePath("/", "layout")
+  return { ok: true as const }
+}
+
+export async function deleteTransaction(id: string) {
+  return setDeleted(id, true)
+}
+
+export async function restoreTransaction(id: string) {
+  return setDeleted(id, false)
 }

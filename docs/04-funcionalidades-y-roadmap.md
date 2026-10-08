@@ -19,7 +19,7 @@
 - [~] Día de inicio de mes configurable (por defecto el 1): la lógica ya existe (`monthRange`), falta el ajuste en Perfil
 - [x] **Agregar movimiento** (botón +: gasto, ingreso y transferencia, con atajo "Pagar todo" para la tarjeta y tipo de cambio implícito entre monedas): gasto, ingreso o transferencia (incluye pagar tarjeta y cambiar dólares). Meta: menos de 5 segundos
 - [~] **Inicio** (datos reales: patrimonio, gasto e ingresos del mes, cuentas, últimos movimientos; falta el sparkline): patrimonio neto en PEN, gasto del mes, saldos por cuenta, deuda de tarjeta y sparkline de 30 días
-- [ ] **Movimientos:** lista por día, filtros (cuenta, categoría, tipo, rango), búsqueda, editar, borrar y deshacer
+- [x] **Movimientos:** lista por día, filtros (cuenta, categoría, tipo, rango), búsqueda, editar, borrar y deshacer (`/movimientos`: periodo mes a mes, filtros en la URL, la búsqueda abarca todos los meses; tocar un movimiento lo edita, también desde Inicio)
 - [ ] **Cuentas:** CRUD. La tarjeta muestra límite, disponible, fecha de corte y fecha de pago
 - [ ] **Categorías:** CRUD con ícono y color
 - [ ] **Análisis:** donut por categoría del mes y barras de los últimos 6 meses

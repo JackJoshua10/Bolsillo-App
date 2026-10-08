@@ -1,18 +1,19 @@
 import { Plus } from "lucide-react"
+import Link from "next/link"
 
 import { AccountTile } from "@/components/finance/account-tile"
 import { AmountDisplay } from "@/components/finance/amount-display"
-import { TransactionRow } from "@/components/finance/transaction-row"
-import { dayLabel, monthRange, todayISO } from "@/lib/dates"
+import { TransactionList } from "@/components/finance/transaction-list"
+import { monthRange, todayISO } from "@/lib/dates"
 import { getProfile } from "@/server/auth"
-import { getActiveSpaceId, getMonthSummary, listAccounts, listRecentTransactions } from "@/server/finance"
-import { WALLET_LABEL, type TransactionItem } from "@/types/finance"
-
-function groupByDay(items: TransactionItem[]) {
-  const groups = new Map<string, TransactionItem[]>()
-  for (const t of items) groups.set(t.occurredOn, [...(groups.get(t.occurredOn) ?? []), t])
-  return [...groups.entries()]
-}
+import {
+  getActiveSpaceId,
+  getMonthSummary,
+  listAccounts,
+  listCategories,
+  listRecentTransactions,
+} from "@/server/finance"
+import { WALLET_LABEL } from "@/types/finance"
 
 export default async function HomePage() {
   const profile = await getProfile()
@@ -20,8 +21,9 @@ export default async function HomePage() {
   const today = todayISO()
   const range = monthRange(today, profile.month_start_day)
 
-  const [accounts, recent, month] = await Promise.all([
+  const [accounts, categories, recent, month] = await Promise.all([
     listAccounts(spaceId),
+    listCategories(spaceId),
     listRecentTransactions(spaceId, 15),
     getMonthSummary(spaceId, range),
   ])
@@ -87,7 +89,14 @@ export default async function HomePage() {
 
       {/* Movimientos recientes */}
       <section className="mt-8 px-5">
-        <h2 className="text-xs tracking-wide text-muted-foreground uppercase">Movimientos</h2>
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-xs tracking-wide text-muted-foreground uppercase">Movimientos</h2>
+          {recent.length > 0 && (
+            <Link href="/movimientos" className="text-xs text-brand-text underline-offset-4 hover:underline">
+              Ver todo
+            </Link>
+          )}
+        </div>
         {recent.length === 0 ? (
           <div className="mt-4 flex items-center gap-3 border border-dashed border-line px-4 py-5 text-sm text-muted-foreground">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-brand-foreground">
@@ -96,16 +105,7 @@ export default async function HomePage() {
             Aún no hay movimientos. Toca el + para registrar tu primer gasto.
           </div>
         ) : (
-          groupByDay(recent).map(([date, items]) => (
-            <div key={date} className="mt-4">
-              <p className="text-[11px] text-muted-foreground first-letter:uppercase">{dayLabel(date, today)}</p>
-              <ul className="mt-1">
-                {items.map((t, i) => (
-                  <TransactionRow key={t.id} transaction={t} isFirst={i === 0} isLast={i === items.length - 1} />
-                ))}
-              </ul>
-            </div>
-          ))
+          <TransactionList transactions={recent} accounts={accounts} categories={categories} today={today} />
         )}
       </section>
     </>

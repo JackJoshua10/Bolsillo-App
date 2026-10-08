@@ -61,6 +61,9 @@ export const listCategories = cache(async (spaceId: string): Promise<Category[]>
 interface TransactionRow {
   id: string
   type: TransactionItem["type"]
+  account_id: string
+  to_account_id: string | null
+  category_id: string | null
   amount_cents: number
   currency: Currency
   to_amount_cents: number | null
@@ -71,21 +74,48 @@ interface TransactionRow {
   to_account: { name: string; wallet: Account["wallet"]; currency: Currency } | null
 }
 
-export async function listRecentTransactions(spaceId: string, limit = 15): Promise<TransactionItem[]> {
+export interface TransactionFilters {
+  /** Rango de fechas: `start` incluido, `end` excluido */
+  range?: Pick<MonthRange, "start" | "end">
+  type?: TransactionItem["type"]
+  /** Movimientos que salen de o llegan a esta cuenta */
+  accountId?: string
+  categoryId?: string
+  /** Busca en la descripción */
+  query?: string
+  limit?: number
+}
+
+/** Escapa los comodines de LIKE para buscar el texto tal cual. */
+function likePattern(text: string) {
+  return `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`
+}
+
+export async function listTransactions(spaceId: string, filters: TransactionFilters = {}): Promise<TransactionItem[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase
+  let request = supabase
     .from("transactions")
     .select(
-      `id, type, amount_cents, currency, to_amount_cents, description, occurred_on,
+      `id, type, account_id, to_account_id, category_id, amount_cents, currency, to_amount_cents, description, occurred_on,
        category:categories(name, icon),
        account:accounts!transactions_account_id_fkey(name, wallet),
        to_account:accounts!transactions_to_account_id_fkey(name, wallet, currency)`,
     )
     .eq("space_id", spaceId)
     .is("deleted_at", null)
+
+  if (filters.range) request = request.gte("occurred_on", filters.range.start).lt("occurred_on", filters.range.end)
+  if (filters.type) request = request.eq("type", filters.type)
+  if (filters.accountId) {
+    request = request.or(`account_id.eq.${filters.accountId},to_account_id.eq.${filters.accountId}`)
+  }
+  if (filters.categoryId) request = request.eq("category_id", filters.categoryId)
+  if (filters.query) request = request.ilike("description", likePattern(filters.query))
+
+  const { data, error } = await request
     .order("occurred_on", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(limit)
+    .limit(filters.limit ?? 500)
     .overrideTypes<TransactionRow[], { merge: false }>()
   if (error) throw error
 
@@ -94,6 +124,9 @@ export async function listRecentTransactions(spaceId: string, limit = 15): Promi
     return {
       id: t.id,
       type: t.type,
+      accountId: t.account_id,
+      toAccountId: t.to_account_id,
+      categoryId: t.category_id,
       amountCents: Number(t.amount_cents),
       currency: t.currency,
       description: t.description,
@@ -106,6 +139,10 @@ export async function listRecentTransactions(spaceId: string, limit = 15): Promi
       toCurrency: crossCurrency ? t.to_account!.currency : null,
     }
   })
+}
+
+export function listRecentTransactions(spaceId: string, limit = 15) {
+  return listTransactions(spaceId, { limit })
 }
 
 export interface MonthSummary {
