@@ -103,3 +103,14 @@ export function convertCents(cents: number, from: Currency, to: Currency, usdToP
   if (from === to) return cents
   return Math.round(from === "USD" ? cents * usdToPen : cents / usdToPen)
 }
+
+/** Monto corto para gráficos: 85000 → "S/ 850", 123450 → "S/ 1.2k", 1290000 → "S/ 13k". */
+export function formatCompactMoney(cents: number, currency: Currency) {
+  const amount = Math.abs(cents) / 100
+  const sign = cents < 0 ? MINUS : ""
+  const body =
+    amount < 1000
+      ? String(Math.round(amount))
+      : `${(Math.round(amount / 100) / 10).toFixed(amount < 10_000 ? 1 : 0).replace(/\.0$/, "")}k`
+  return `${sign}${CURRENCY_SYMBOL[currency]} ${body}`
+}

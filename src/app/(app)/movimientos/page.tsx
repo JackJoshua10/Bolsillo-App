@@ -1,10 +1,9 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { Metadata } from "next"
-import Link from "next/link"
 
 import { AmountDisplay } from "@/components/finance/amount-display"
 import { TransactionFilters } from "@/components/finance/transaction-filters"
 import { TransactionList } from "@/components/finance/transaction-list"
+import { PeriodNav, periodLabel } from "@/components/period-nav"
 import { addDays, monthRange, todayISO } from "@/lib/dates"
 import { CURRENCIES, type Currency } from "@/lib/money"
 import { filtersHref, hasActiveFilters, parseFilterParams, TYPE_PARAM } from "@/lib/transaction-filters"
@@ -23,8 +22,7 @@ export default async function TransactionsPage(props: PageProps<"/movimientos">)
   const prevPeriod = addDays(range.start, -1)
   const nextPeriod = range.end <= today ? range.end : null
   const currentStart = monthRange(today, profile.month_start_day).start
-  const year = range.start.slice(0, 4)
-  const periodLabel = year === today.slice(0, 4) ? range.label : `${range.label} ${year}`
+  const label = periodLabel(range, today)
   // Al buscar por texto se busca en todos los meses
   const searching = Boolean(params.q)
 
@@ -52,37 +50,19 @@ export default async function TransactionsPage(props: PageProps<"/movimientos">)
       </header>
 
       {/* Periodo */}
-      <nav aria-label="Periodo" className="mt-4 flex items-center justify-between px-3">
+      <div className="mt-4">
         {searching ? (
-          <p className="w-full px-2 text-center text-sm text-muted-foreground">Buscando en todos los meses</p>
+          <p className="px-5 py-2.5 text-center text-sm text-muted-foreground">Buscando en todos los meses</p>
         ) : (
-          <>
-            <Link
-              href={filtersHref(params, { periodo: prevPeriod })}
-              scroll={false}
-              aria-label="Periodo anterior"
-              className="flex size-10 items-center justify-center text-muted-foreground"
-            >
-              <ChevronLeft className="size-5" />
-            </Link>
-            <p className="text-sm font-medium first-letter:uppercase">{periodLabel}</p>
-            {nextPeriod ? (
-              <Link
-                href={filtersHref(params, { periodo: nextPeriod === currentStart ? undefined : nextPeriod })}
-                scroll={false}
-                aria-label="Periodo siguiente"
-                className="flex size-10 items-center justify-center text-muted-foreground"
-              >
-                <ChevronRight className="size-5" />
-              </Link>
-            ) : (
-              <span aria-hidden className="flex size-10 items-center justify-center text-muted-foreground/30">
-                <ChevronRight className="size-5" />
-              </span>
-            )}
-          </>
+          <PeriodNav
+            label={label}
+            prevHref={filtersHref(params, { periodo: prevPeriod })}
+            nextHref={
+              nextPeriod ? filtersHref(params, { periodo: nextPeriod === currentStart ? undefined : nextPeriod }) : null
+            }
+          />
         )}
-      </nav>
+      </div>
 
       <div className="mt-2">
         <TransactionFilters params={params} accounts={accounts} categories={categories} />

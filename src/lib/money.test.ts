@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { convertCents, formatMoney, impliedUsdToPen, parseAmountToCents } from "./money"
+import { convertCents, formatCompactMoney, formatMoney, impliedUsdToPen, parseAmountToCents } from "./money"
 
 describe("formatMoney", () => {
   it("formatea soles y dólares", () => {
@@ -67,5 +67,15 @@ describe("impliedUsdToPen", () => {
   it("devuelve null en la misma moneda o sin montos", () => {
     expect(impliedUsdToPen(1000, "PEN", 1000, "PEN")).toBeNull()
     expect(impliedUsdToPen(0, "PEN", 1000, "USD")).toBeNull()
+  })
+})
+
+describe("formatCompactMoney", () => {
+  it("abrevia miles con k", () => {
+    expect(formatCompactMoney(85000, "PEN")).toBe("S/ 850")
+    expect(formatCompactMoney(123450, "PEN")).toBe("S/ 1.2k")
+    expect(formatCompactMoney(1290000, "PEN")).toBe("S/ 13k")
+    expect(formatCompactMoney(100000, "USD")).toBe("US$ 1k")
+    expect(formatCompactMoney(0, "PEN")).toBe("S/ 0")
   })
 })

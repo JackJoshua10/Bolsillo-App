@@ -1,14 +1,14 @@
 # 07 · Estado actual y cómo continuar
 
 > **Para Claude Code:** lee este archivo al empezar una sesión nueva. Resume las conversaciones previas (la memoria local de Claude Code no viaja entre PCs).
-> Última actualización: 2026-10-14.
+> Última actualización: 2026-10-14 (Análisis).
 
 ## Dónde estamos
 
-| Fase             | Estado                                                                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 · Cimientos    | ✅ Proyecto, diseño, migración inicial, PWA. Desplegado en Vercel. Pendiente: validar el tono exacto del citrino con una captura de la plantilla. |
-| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida, registro de gasto/ingreso/transferencia, Inicio, Movimientos y Cuentas.                           |
+| Fase             | Estado                                                                                                                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0 · Cimientos    | ✅ Proyecto, diseño, migración inicial, PWA. Desplegado en Vercel. Pendiente: validar el tono exacto del citrino con una captura de la plantilla.                                          |
+| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida, registro de gasto/ingreso/transferencia, Inicio, Movimientos, Cuentas y Análisis. Desplegada en Vercel e instalada en el iPhone del autor. |
 
 Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-roadmap.md).
 
@@ -21,7 +21,8 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
 - **Inicio**: patrimonio neto (suma por moneda, la tarjeta en negativo), gastado e ingresos del mes, cuentas ("Gestionar" → `/cuentas`) y últimos 15 movimientos ("Ver todo" → `/movimientos`).
 - **`/movimientos`**: periodo mes a mes (respeta `month_start_day`), filtros por tipo/cuenta/categoría en la URL (`?periodo&tipo&cuenta&categoria&q`, ver `src/lib/transaction-filters.ts`), búsqueda por descripción en todos los meses y totales. Tocar un movimiento (aquí o en Inicio) lo edita en la misma hoja del +; borrar es lógico (`deleted_at`) con "Deshacer". Crear y editar usan una sola acción: `saveTransaction`.
 - **`/cuentas`** (desde Inicio o Perfil): agregar efectivo/banco/tarjeta/ahorros en PEN o USD; editar; **ajustar saldo** (crea un movimiento `adjustment` por la diferencia, no toca el saldo inicial); **archivar** solo con saldo 0 (con "Deshacer" y sección "Archivadas" para restaurar). Las tarjetas muestran línea, disponible y próximas fechas de corte y pago. Los ajustes y los movimientos de cuentas archivadas no se pueden editar.
-- **Perfil**: nombre, correo, enlace a Cuentas, tema (claro/oscuro/sistema) y cerrar sesión. **Análisis** es un placeholder.
+- **`/analisis`**: mismo selector de periodo que Movimientos (`?periodo`, componente `PeriodNav`). Cifras: gastado (con % vs. periodo anterior), ingresos, balance y promedio diario. "En qué gastas": barras horizontales de un color, de mayor a menor; cada fila abre Movimientos filtrado. "Últimos 6 meses": columnas en forma "énfasis" (periodo elegido en `--chart-accent`, el resto en `--chart-muted`), la ventana queda fija mientras el periodo elegido esté entre los 6 últimos, y tiene "Ver como tabla". Solo cuenta soles; los gastos en dólares se avisan aparte. Lógica pura en `src/lib/analytics.ts` (con tests).
+- **Perfil**: nombre, correo, enlace a Cuentas, tema (claro/oscuro/sistema) y cerrar sesión.
 
 ## Decisión pendiente (preguntar al usuario)
 
@@ -37,7 +38,7 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
 
 1. Resolver la decisión de arriba y ajustar la bienvenida y el registro rápido si hace falta.
 2. **Perfil**: día de inicio de mes (`profiles.month_start_day`; la lógica `monthRange` ya existe), moneda base y modo privado.
-3. **Categorías** (CRUD con ícono y color) y **Análisis** (donut del mes, barras de 6 meses).
+3. **Categorías** (CRUD con ícono y color).
 4. Instalarla en el iPhone (Safari → Compartir → Agregar a inicio) y probarla en el día a día.
 5. API `/api/v1` + **Atajo de iOS** ([05](05-atajo-ios.md)).
 
@@ -60,7 +61,7 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
   - Si está pausado, Claude puede reactivarlo con el conector de Supabase (`restore_project`); se hizo el 2026-10-14.
   - Hay **un usuario**: el del autor, ya confirmado. Un primer registro con el correo mal escrito (`gmial.com`) se borró.
 - **Vercel:** proyecto `bolsillo-app` (cuenta Hobby de JackJoshua10), producción en **https://bolsillo-app-tau.vercel.app**. Despliega solo en cada push a `main`; las ramas generan previews. Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en Production y Preview. No se agregó la integración "Supabase" de Vercel (crearía otra base).
-- **PC de la oficina:** además de pnpm 12, el Control de aplicaciones bloquea `@next/swc-win32-x64-msvc` (2026-10-14). lint/typecheck/tests pasan; `pnpm dev`/`build` locales aún sin probar con este bloqueo (usar Vercel si fallan).
+- **PC de la oficina:** además de pnpm 12, el Control de aplicaciones bloquea `@next/swc-win32-x64-msvc` (2026-10-14). igual lint/typecheck/tests y `pnpm dev` funcionan (probado 2026-10-14).
 - **`.env.local` no está en GitHub.** En cada PC hay que crearlo desde `.env.example` con la Project URL (termina en `.supabase.co`, **sin** `/rest/v1/`) y la Publishable key (`sb_publishable_…`). Ver [06](06-configurar-supabase.md).
 - **Next.js 16:** `proxy.ts` reemplaza a `middleware`. Leer `node_modules/next/dist/docs/` antes de usar APIs nuevas (ver `AGENTS.md`).
 

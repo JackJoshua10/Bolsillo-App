@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { addDays, dayLabel, monthRange, nextMonthDay, shortDateLabel, todayISO } from "./dates"
+import { addDays, dayLabel, monthRange, nextMonthDay, shortDateLabel, shortMonthLabel, todayISO } from "./dates"
 
 describe("todayISO", () => {
   it("usa la hora de Lima (UTC−5)", () => {
@@ -67,5 +67,12 @@ describe("nextMonthDay", () => {
 describe("shortDateLabel", () => {
   it("muestra día y mes", () => {
     expect(shortDateLabel("2026-10-15")).toMatch(/^15 oct/)
+  })
+})
+
+describe("shortMonthLabel", () => {
+  it("mes corto en minúsculas sin punto", () => {
+    expect(shortMonthLabel("2026-09-15")).toBe("set")
+    expect(shortMonthLabel("2026-10-01")).toBe("oct")
   })
 })

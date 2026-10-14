@@ -22,7 +22,7 @@
 - [x] **Movimientos:** lista por día, filtros (cuenta, categoría, tipo, rango), búsqueda, editar, borrar y deshacer (`/movimientos`: periodo mes a mes, filtros en la URL, la búsqueda abarca todos los meses; tocar un movimiento lo edita, también desde Inicio)
 - [x] **Cuentas:** CRUD. La tarjeta muestra límite, disponible, fecha de corte y fecha de pago (`/cuentas`: agregar, editar, ajustar saldo con movimiento `adjustment`, archivar con saldo 0 y restaurar)
 - [ ] **Categorías:** CRUD con ícono y color
-- [ ] **Análisis:** donut por categoría del mes y barras de los últimos 6 meses
+- [x] **Análisis** (`/analisis`): cifras del periodo (gastado vs. anterior, ingresos, balance, promedio diario), barras por categoría (en vez de dona: compara mejor) y columnas de los últimos 6 meses con tabla accesible
 - [ ] **Tipo de cambio:** obtener el diario automáticamente, con edición manual
 - [ ] **Perfil:** tema claro/oscuro/sistema, moneda base y modo privado (ocultar montos)
 - [ ] **API `/api/v1/transactions`** y generación de token

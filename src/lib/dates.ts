@@ -91,3 +91,10 @@ export function nextMonthDay(today: string, day: number) {
 export function shortDateLabel(date: string) {
   return shortDate.format(toUTC(date))
 }
+
+const monthShort = new Intl.DateTimeFormat("es-PE", { month: "short", timeZone: "UTC" })
+
+/** "set", "oct" (mes abreviado, minúsculas y sin punto). */
+export function shortMonthLabel(date: string) {
+  return monthShort.format(toUTC(date)).replace(".", "").toLowerCase()
+}

@@ -33,6 +33,15 @@ El citrino puro sobre blanco no tiene contraste suficiente para texto (WCAG). Po
 
 Colores de categorías: paleta secundaria desaturada (8 a 10 tonos) que no compita con el citrino. Se define en la fase de diseño de componentes.
 
+**Gráficos.** Por ahora todos son de una sola serie, así que no usan colores por categoría: forma "énfasis" con dos tokens validados (contraste ≥ 3:1 sobre `--bg` y separación con daltonismo).
+
+| Token            | Claro     | Oscuro    | Uso                                            |
+| ---------------- | --------- | --------- | ---------------------------------------------- |
+| `--chart-accent` | `#5A6B00` | `#D4F24A` | Barra o columna destacada, barras de categoría |
+| `--chart-muted`  | `#8D897E` | `#666A64` | Columnas de contexto (otros periodos)          |
+
+Reglas: barras ≤ 24px con 4px redondeados solo en el extremo de datos, línea base fina, sin ejes dobles, rótulos selectivos (el resto en hover/foco y en "Ver como tabla"), texto siempre en colores de texto (nunca del color de la serie). Dona/pastel solo para ≤ 6 partes muy distintas; para comparar categorías se usan barras.
+
 ## Tipografía
 
 | Rol              | Fuente                            | Notas                                            |

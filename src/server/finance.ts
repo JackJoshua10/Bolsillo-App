@@ -2,6 +2,7 @@ import "server-only"
 
 import { cache } from "react"
 
+import type { AnalyticsTransaction } from "@/lib/analytics"
 import type { MonthRange } from "@/lib/dates"
 import type { Currency } from "@/lib/money"
 import { createClient } from "@/lib/supabase/server"
@@ -174,4 +175,41 @@ export async function getMonthSummary(spaceId: string, range: MonthRange): Promi
     bucket[t.currency as Currency] += Number(t.amount_cents)
   }
   return summary
+}
+
+const PAGE_SIZE = 1000 // límite de filas por respuesta de la API de Supabase
+
+/** Gastos e ingresos (sin transferencias ni ajustes) entre `from` (incluido) y `to` (excluido). */
+export async function listAnalyticsTransactions(
+  spaceId: string,
+  from: string,
+  to: string,
+): Promise<AnalyticsTransaction[]> {
+  const supabase = await createClient()
+  const rows: AnalyticsTransaction[] = []
+
+  for (let page = 0; ; page++) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("type, amount_cents, currency, category_id, occurred_on")
+      .eq("space_id", spaceId)
+      .in("type", ["expense", "income"])
+      .is("deleted_at", null)
+      .gte("occurred_on", from)
+      .lt("occurred_on", to)
+      .order("id")
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
+    if (error) throw error
+
+    for (const t of data) {
+      rows.push({
+        type: t.type,
+        amountCents: Number(t.amount_cents),
+        currency: t.currency,
+        categoryId: t.category_id,
+        occurredOn: t.occurred_on,
+      })
+    }
+    if (data.length < PAGE_SIZE) return rows
+  }
 }
