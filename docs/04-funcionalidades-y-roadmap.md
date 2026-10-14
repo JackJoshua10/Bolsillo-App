@@ -4,7 +4,7 @@
 
 - [ ] Validar los tokens de color con una captura de la plantilla
 - [x] Crear el proyecto Next.js 16 + TS + Tailwind 4 + shadcn + ESLint/Prettier + Vitest
-- [ ] Crear los proyectos Supabase (dev y prod) y conectar Vercel
+- [x] Crear el proyecto Supabase (`bolsillo-dev`) y conectar Vercel (https://bolsillo-app-tau.vercel.app). Un proyecto `prod` separado queda para antes de invitar a otras personas
 - [x] Migración inicial: perfiles, espacios, cuentas, categorías, movimientos, tipo de cambio y RLS (validada con `pnpm test:db`, falta aplicarla en Supabase)
 - [x] Tokens de diseño (claro/oscuro) y componentes base (vista previa en `/`)
 - [x] Manifest PWA e íconos generados

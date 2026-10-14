@@ -1,14 +1,14 @@
 # 07 · Estado actual y cómo continuar
 
 > **Para Claude Code:** lee este archivo al empezar una sesión nueva. Resume las conversaciones previas (la memoria local de Claude Code no viaja entre PCs).
-> Última actualización: 2026-10-08.
+> Última actualización: 2026-10-14.
 
 ## Dónde estamos
 
-| Fase             | Estado                                                                                                                                        |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 · Cimientos    | ✅ Proyecto, diseño, migración inicial, PWA. Pendiente: validar el tono exacto del citrino con una captura de la plantilla y conectar Vercel. |
-| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida, registro de gasto/ingreso/transferencia, Inicio, Movimientos y Cuentas.                       |
+| Fase             | Estado                                                                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 · Cimientos    | ✅ Proyecto, diseño, migración inicial, PWA. Desplegado en Vercel. Pendiente: validar el tono exacto del citrino con una captura de la plantilla. |
+| 1 · MVP personal | 🟡 En curso. Hecho: login/registro, bienvenida, registro de gasto/ingreso/transferencia, Inicio, Movimientos y Cuentas.                           |
 
 Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-roadmap.md).
 
@@ -38,7 +38,7 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
 1. Resolver la decisión de arriba y ajustar la bienvenida y el registro rápido si hace falta.
 2. **Perfil**: día de inicio de mes (`profiles.month_start_day`; la lógica `monthRange` ya existe), moneda base y modo privado.
 3. **Categorías** (CRUD con ícono y color) y **Análisis** (donut del mes, barras de 6 meses).
-4. Conectar **Vercel** para usarla en el iPhone.
+4. Instalarla en el iPhone (Safari → Compartir → Agregar a inicio) y probarla en el día a día.
 5. API `/api/v1` + **Atajo de iOS** ([05](05-atajo-ios.md)).
 
 ## Recordatorios para Claude
@@ -56,8 +56,11 @@ Detalle de tareas en [04 · Funcionalidades y roadmap](04-funcionalidades-y-road
   - ⚠️ En el plan Free se **pausa** tras ~1 semana sin uso (pasó el 2026-10-08): el panel bloquea Settings → API Keys. Se reactiva con **Resume project** en la página del proyecto; los datos se conservan.
   - Hay otra organización "Bolsillo" con un proyecto `Bolsillo-SupaBase` que la app **no** usa; el bueno es `bolsillo-dev` (ref `phqtyenyfoggmxxvzokh`) en "JackJoshua10's Org".
   - Migraciones aplicadas a mano en el SQL Editor: `20260925000000_init.sql` y `20260930000000_account_wallet.sql`.
-  - Auth → URL Configuration: Site URL `http://localhost:3000`, redirección permitida `http://localhost:3000/**`.
+  - Auth → URL Configuration: Site URL `https://bolsillo-app-tau.vercel.app`; redirecciones permitidas `http://localhost:3000/**`, `https://bolsillo-app-tau.vercel.app/**` y `https://bolsillo-app-*-jackjoshua10s-projects.vercel.app/**` (previews).
+  - Si está pausado, Claude puede reactivarlo con el conector de Supabase (`restore_project`); se hizo el 2026-10-14.
   - Hay **un usuario**: el del autor, ya confirmado. Un primer registro con el correo mal escrito (`gmial.com`) se borró.
+- **Vercel:** proyecto `bolsillo-app` (cuenta Hobby de JackJoshua10), producción en **https://bolsillo-app-tau.vercel.app**. Despliega solo en cada push a `main`; las ramas generan previews. Variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` en Production y Preview. No se agregó la integración "Supabase" de Vercel (crearía otra base).
+- **PC de la oficina:** además de pnpm 12, el Control de aplicaciones bloquea `@next/swc-win32-x64-msvc` (2026-10-14). lint/typecheck/tests pasan; `pnpm dev`/`build` locales aún sin probar con este bloqueo (usar Vercel si fallan).
 - **`.env.local` no está en GitHub.** En cada PC hay que crearlo desde `.env.example` con la Project URL (termina en `.supabase.co`, **sin** `/rest/v1/`) y la Publishable key (`sb_publishable_…`). Ver [06](06-configurar-supabase.md).
 - **Next.js 16:** `proxy.ts` reemplaza a `middleware`. Leer `node_modules/next/dist/docs/` antes de usar APIs nuevas (ver `AGENTS.md`).
 

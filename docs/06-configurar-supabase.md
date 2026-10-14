@@ -29,8 +29,8 @@ Guía paso a paso para dejar funcionando la base de datos y el login. Se hace un
 
 En **Authentication → URL Configuration**:
 
-- **Site URL:** `http://localhost:3000` (en producción será el dominio de Vercel)
-- **Redirect URLs:** agrega `http://localhost:3000/**` ✅ (hecho en `bolsillo-dev`). Cuando conectemos Vercel se agregan sus dominios.
+- **Site URL:** `https://bolsillo-app-tau.vercel.app` ✅ (antes `http://localhost:3000`)
+- **Redirect URLs** ✅: `http://localhost:3000/**`, `https://bolsillo-app-tau.vercel.app/**` y `https://bolsillo-app-*-jackjoshua10s-projects.vercel.app/**` (previews de Vercel).
 
 Supabase solo redirige a URLs de esta lista. Eso impide que alguien use los correos para mandar gente a otro sitio.
 
